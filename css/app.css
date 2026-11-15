@@ -570,4 +570,4 @@ kbd { min-width: 30px; text-align: center; padding: 2px 8px; border-radius: 7px;
 
 /* التطبيق الأصلي (Capacitor) */
 .link-gold { color: var(--gold); text-decoration: none; border-bottom: 1px dashed rgba(231, 180, 83, .5); }
-html.native, html.native body { overscroll-behavior: none; }
+html.native, html.native body { overscroll-behavior: none; overflow: hidden; height: 100%; }

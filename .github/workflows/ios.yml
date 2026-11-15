@@ -101,8 +101,10 @@ jobs:
           APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name "App.app" -maxdepth 3 | head -1)
           xcrun simctl install "$UDID" "$APP"
           xcrun simctl launch "$UDID" live.clipkat.lens
-          sleep 12
           mkdir -p "$RUNNER_TEMP/shots"
+          sleep 12
+          xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/shots/ios-simulator-home-12s.png"
+          sleep 20
           xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/shots/ios-simulator-home.png"
       - uses: actions/upload-artifact@v4
         with:

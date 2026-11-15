@@ -12,7 +12,7 @@
   "ios": {
     "backgroundColor": "#09090a",
     "contentInset": "never",
-    "scrollEnabled": true,
+    "scrollEnabled": false,
     "limitsNavigationsToAppBoundDomains": false
   },
   "plugins": {
