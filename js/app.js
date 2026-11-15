@@ -85,7 +85,7 @@
           <div class="kbd-grid">
           ${[['مسافة', 'تشغيل / إيقاف'], ['S', 'قص عند المؤشر'], ['Delete', 'حذف المقطع'], ['D', 'تكرار المقطع'], ['K', 'إضافة مفتاح حركة'], ['← →', 'إطار للأمام/للخلف'], ['Shift + ← →', 'ثانية كاملة'], ['Home / End', 'البداية / النهاية'], ['+ / −', 'تكبير وتصغير الخط الزمني'], ['N', 'تفعيل المغناطيس'], ['Ctrl + Z', 'تراجع'], ['Ctrl + Shift + Z', 'إعادة'], ['Ctrl + S', 'حفظ']].map(([k, v]) => `<div><kbd>${k}</kbd><span>${v}</span></div>`).join('')}
           </div></div>
-        <div class="card"><h3>الخصوصية والتوافق</h3><p class="muted">يعمل على آيفون وأجهزة هواوي (بدون خدمات جوجل) والكمبيوتر. يمكنك تثبيته كتطبيق من قائمة المتصفح «إضافة إلى الشاشة الرئيسية». بياناتك محفوظة محلياً في المتصفح، فاحرص على تصدير أعمالك المهمة.</p></div>
+        <div class="card"><h3>الخصوصية والتوافق</h3><p class="muted">يعمل على آيفون وأجهزة هواوي (بدون خدمات جوجل) والكمبيوتر. ${NL.isNative ? 'لا يجمع التطبيق أي بيانات ولا يحتاج حساباً أو إنترنت؛ كل مشاريعك محفوظة على جهازك فقط، فاحرص على تصدير أعمالك المهمة.' : 'يمكنك تثبيته كتطبيق من قائمة المتصفح «إضافة إلى الشاشة الرئيسية». بياناتك محفوظة محلياً في المتصفح، فاحرص على تصدير أعمالك المهمة.'}</p><p><a class="link-gold" href="privacy.html">سياسة الخصوصية · Privacy Policy</a></p></div>
         <footer class="copyright"><img src="assets/logo.svg" alt=""><div><b>جميع الحقوق محفوظة © 2026 وطن النهار</b><br><span dir="ltr">All rights reserved © 2026 Watan Al-Nahar</span><br><small class="muted">الإصدار 1.0 · لا يجوز نسخ التطبيق أو توزيعه أو تعديله دون إذن كتابي من المالك.</small></div></footer>
       </section>`;
     }
@@ -95,6 +95,6 @@
     NL.DB.persist();
     await route();
     setTimeout(() => document.getElementById('splash').classList.add('gone'), 450);
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { });
+    if ('serviceWorker' in navigator && !NL.isNative && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { });
   });
 })(window.NL);

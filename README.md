@@ -49,3 +49,7 @@ python3 -m http.server 8080
 
 ---
 جميع الحقوق محفوظة © 2026 وطن النهار — All rights reserved © 2026 Watan Al-Nahar. راجع ملف LICENSE.
+
+
+## التطبيق الأصلي (Google Play / App Store)
+مشروع Capacitor في مجلد `native/` — التفاصيل وخطوات البناء والرفع في [native/README-native.md](native/README-native.md). سياسة الخصوصية: [privacy.html](privacy.html) · https://lens.clipkat.live/privacy.html

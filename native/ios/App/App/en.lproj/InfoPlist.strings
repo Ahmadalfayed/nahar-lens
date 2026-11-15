@@ -1,0 +1,6 @@
+/* Nahar Lens — All rights reserved © 2026 Watan Al-Nahar */
+"CFBundleDisplayName" = "Nahar Lens";
+"NSPhotoLibraryUsageDescription" = "Nahar Lens needs access to your photos and videos only when you choose media to import into your film project.";
+"NSPhotoLibraryAddUsageDescription" = "Nahar Lens saves the films you export to your Photos library.";
+"NSCameraUsageDescription" = "Nahar Lens uses the camera only if you choose to shoot a photo or clip directly for your project.";
+"NSMicrophoneUsageDescription" = "Nahar Lens uses the microphone only to record sound when you shoot a clip directly for your project.";

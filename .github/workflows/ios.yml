@@ -1,0 +1,186 @@
+# عدسة النهار — بناء تطبيق iOS | جميع الحقوق محفوظة © 2026 وطن النهار
+# 1) build-unsigned: يتحقق من أن مشروع iOS يُبنى بدون توقيع (يعمل دائماً).
+# 2) simulator-smoke: يشغّل التطبيق على محاكي iPhone ويلتقط صورة شاشة (للتحقق فقط).
+# 3) release-upload: يوقّع ويرفع إلى App Store Connect / TestFlight — يعمل فقط عند إضافة الأسرار:
+#    APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8_BASE64  (راجع native/README-native.md)
+name: iOS build
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Sign and upload to App Store Connect (needs secrets)"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ["native/**", "js/**", "css/**", "index.html", "privacy.html", "assets/**", ".github/workflows/ios.yml"]
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-unsigned:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: native/package-lock.json
+      - name: Install & sync web assets into the iOS project
+        run: |
+          npm ci
+          npm run web
+          npx cap sync ios
+      - name: Xcode version
+        run: xcodebuild -version
+      - name: Resolve Swift packages
+        working-directory: native/ios/App
+        run: xcodebuild -resolvePackageDependencies -project App.xcodeproj -scheme App
+      - name: Archive (unsigned, generic iOS device)
+        working-directory: native/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/NaharLens.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee "$RUNNER_TEMP/xcodebuild.log" | grep -E "error:|warning: .*deprecated|\*\* ARCHIVE" || true
+          test -d "$RUNNER_TEMP/NaharLens.xcarchive/Products/Applications/App.app"
+          echo "✅ Unsigned archive built"
+          ls -la "$RUNNER_TEMP/NaharLens.xcarchive/Products/Applications/App.app" | head -30
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$RUNNER_TEMP/NaharLens.xcarchive/Products/Applications/App.app/Info.plist"
+          test -f "$RUNNER_TEMP/NaharLens.xcarchive/Products/Applications/App.app/public/index.html" && echo "✅ Web assets bundled inside the app (offline)"
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          if-no-files-found: ignore
+
+  simulator-smoke:
+    runs-on: macos-26
+    timeout-minutes: 45
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: native/package-lock.json
+      - run: |
+          npm ci
+          npm run web
+          npx cap sync ios
+      - name: Build for simulator
+        working-directory: native/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild build -project App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO | tail -5
+      - name: Boot simulator, install, launch, screenshot
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];c=[x for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name'] and 'Pro Max' in x['name']] or [x for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']];print(c[-1]['udid'])")
+          echo "Simulator: $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name "App.app" -maxdepth 3 | head -1)
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl launch "$UDID" live.clipkat.lens
+          sleep 12
+          mkdir -p "$RUNNER_TEMP/shots"
+          xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/shots/ios-simulator-home.png"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshot
+          path: ${{ runner.temp }}/shots
+
+  release-upload:
+    needs: build-unsigned
+    if: github.event_name == 'workflow_dispatch' && inputs.upload
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - name: Check secrets
+        working-directory: .
+        run: |
+          for v in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8_BASE64; do
+            if [ -z "${!v}" ]; then echo "::error::Missing secret $v — see native/README-native.md"; exit 1; fi
+          done
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: native/package-lock.json
+      - run: |
+          npm ci
+          npm run web
+          npx cap sync ios
+      - name: Write App Store Connect API key
+        run: |
+          mkdir -p "$RUNNER_TEMP/asc"
+          echo "$ASC_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/asc/AuthKey_${ASC_KEY_ID}.p8"
+      - name: Bump build number
+        working-directory: native/ios/App
+        run: xcrun agvtool new-version -all "${{ github.run_number }}"
+      - name: Archive (automatic cloud signing via API key)
+        working-directory: native/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/NaharLens.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic | tail -20
+      - name: Export & upload to App Store Connect (TestFlight)
+        working-directory: native/ios/App
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/NaharLens.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "✅ Uploaded — check App Store Connect › TestFlight in ~15 minutes."
+      - name: Clean up key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/asc"

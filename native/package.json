@@ -1,0 +1,29 @@
+{
+  "name": "nahar-lens-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "عدسة النهار — التطبيق الأصلي (Android / iOS) عبر Capacitor. جميع الحقوق محفوظة © 2026 وطن النهار",
+  "author": "وطن النهار",
+  "license": "UNLICENSED",
+  "scripts": {
+    "web": "node scripts/copy-web.mjs",
+    "sync": "npm run web && npx cap sync",
+    "android:release": "npm run sync && cd android && ./gradlew bundleRelease assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
+    "nahar-gallery-saver": "file:plugins/gallery-saver"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2"
+  }
+}

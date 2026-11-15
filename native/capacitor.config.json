@@ -1,0 +1,32 @@
+{
+  "appId": "live.clipkat.lens",
+  "appName": "عدسة النهار",
+  "webDir": "www",
+  "backgroundColor": "#09090a",
+  "loggingBehavior": "debug",
+  "android": {
+    "backgroundColor": "#09090a",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "backgroundColor": "#09090a",
+    "contentInset": "never",
+    "scrollEnabled": true,
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SystemBars": { "style": "DARK", "insetsHandling": "css" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#09090a", "overlaysWebView": true },
+    "SplashScreen": {
+      "launchShowDuration": 900,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 250,
+      "backgroundColor": "#09090a",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP",
+      "splashFullScreen": false,
+      "splashImmersive": false
+    }
+  }
+}

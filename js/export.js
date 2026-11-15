@@ -47,9 +47,16 @@
             const name = `${P.title.replace(/[\\/:*?"<>|]/g, '')}.${ext}`;
             const url = URL.createObjectURL(blob);
             const res = body.querySelector('.ex-result'); res.hidden = false;
-            res.innerHTML = `<video src="${url}" controls playsinline></video><div class="btn-row"><button class="btn gold" id="exDl">${icon('download')}<span>تنزيل (${(blob.size / 1e6).toFixed(1)} ميجابايت)</span></button>${navigator.canShare && navigator.canShare({ files: [new File([blob], name, { type: blob.type })] }) ? `<button class="btn" id="exShare">${icon('upload')}<span>حفظ في الصور / مشاركة</span></button>` : ''}</div>`;
-            res.querySelector('#exDl').onclick = () => download(blob, name);
-            const sh = res.querySelector('#exShare'); if (sh) sh.onclick = () => navigator.share({ files: [new File([blob], name, { type: blob.type })], title: P.title }).catch(() => { });
+            const mb = (blob.size / 1e6).toFixed(1);
+            if (NL.isNative) {
+              res.innerHTML = `<video src="${url}" controls playsinline></video><div class="btn-row"><button class="btn gold" id="exDl">${icon('download')}<span>حفظ في الصور (${mb} ميجابايت)</span></button><button class="btn" id="exShare">${icon('upload')}<span>مشاركة</span></button></div>`;
+              res.querySelector('#exDl').onclick = async (ev) => { const b = ev.currentTarget; b.disabled = true; try { await NL.saveToGallery(blob, name); toast('تم حفظ الفيلم في الصور ✓'); b.querySelector('span').textContent = 'تم الحفظ في الصور ✓'; } catch (e) { b.disabled = false; toast(/PERMISSION/.test(String(e && e.message)) ? 'اسمح بالوصول إلى الصور من إعدادات الجهاز' : 'تعذّر الحفظ: ' + (e && e.message || e), 'err'); } };
+              res.querySelector('#exShare').onclick = () => NL.shareFile(blob, name, P.title).catch((e) => toast('تعذّرت المشاركة: ' + (e && e.message || e), 'err'));
+            } else {
+              res.innerHTML = `<video src="${url}" controls playsinline></video><div class="btn-row"><button class="btn gold" id="exDl">${icon('download')}<span>تنزيل (${mb} ميجابايت)</span></button>${navigator.canShare && navigator.canShare({ files: [new File([blob], name, { type: blob.type })] }) ? `<button class="btn" id="exShare">${icon('upload')}<span>حفظ في الصور / مشاركة</span></button>` : ''}</div>`;
+              res.querySelector('#exDl').onclick = () => download(blob, name);
+              const sh = res.querySelector('#exShare'); if (sh) sh.onclick = () => navigator.share({ files: [new File([blob], name, { type: blob.type })], title: P.title }).catch(() => { });
+            }
             body.querySelector('.ex-progress').hidden = true;
             btn.querySelector('span').textContent = 'تم التصدير ✓';
             window.__lastExport = { size: blob.size, type: blob.type, name };
@@ -105,8 +112,8 @@
       return new Blob(chunks, { type: (rec.mimeType || mime || 'video/webm').split(';')[0] });
     };
     const promise = (async () => {
-      Engine.exporting = true;
-      try { return await run(); } finally { Engine.exporting = false; Engine.onNeedRender && Engine.onNeedRender(); }
+      Engine.exporting = true; NL.keepAwake && NL.keepAwake(true);
+      try { return await run(); } finally { Engine.exporting = false; NL.keepAwake && NL.keepAwake(false); Engine.onNeedRender && Engine.onNeedRender(); }
     })();
     return { promise, cancel() { cancelled = true; clearTimeout(timer); } };
   }
