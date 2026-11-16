@@ -16,7 +16,7 @@
    * انظر docs/ads.md و native/README-native.md.
    */
   NL.AdsConfig = {
-    ADSENSE_CLIENT: '',
+    ADSENSE_CLIENT: 'ca-pub-7131956921965231',
     ADSENSE_SLOT_HOME: '',
     ADSENSE_SLOT_PAGES: '',
 

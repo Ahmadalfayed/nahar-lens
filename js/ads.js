@@ -170,7 +170,9 @@
     const el = host();
     if (el) el.hidden = true;
     document.body.classList.remove('has-ads');
-    // لا نحمّل شيئاً إن كانت الإعدادات فارغة وليس وضع العرض التجريبي
+    // نحمّل سكربت AdSense للتحقق من الموقع إذا وُجد معرّف الناشر، حتى قبل توفر وحدات البانر.
+    // البانرات تبقى مطفية ما دام رقم الوحدة فارغاً (sync → hideHost).
+    if (adsenseEnabled()) loadAdsense(cfg().ADSENSE_CLIENT.trim());
     if (!isDemo() && !adsenseEnabled() && !(isNative() && cfg().ADMOB_ENABLED)) return;
     sync();
     window.addEventListener('hashchange', sync);
