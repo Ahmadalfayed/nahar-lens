@@ -54,3 +54,23 @@ cd android && ./gradlew bundleRelease assembleRelease
 ## تحديث الإصدار
 - Android: `versionCode` و`versionName` في `android/app/build.gradle` (زد `versionCode` في كل رفع).
 - iOS: `MARKETING_VERSION` في مشروع Xcode؛ رقم البناء يُضبط تلقائياً من رقم تشغيل الـ workflow.
+
+## الإعلانات (مطفية في 1.0.0)
+
+إصدار المتاجر 1.0.0 **بدون إعلانات وبدون إذن INTERNET وبدون Google Play Services**، ليعمل على هواوي كما هو.
+
+التفعيل لاحقاً يكون في بناء جديد فقط:
+
+1. املأ معرّفات AdMob في `js/ads-config.js` ثم ضع `ADMOB_ENABLED: true`. أثناء التطوير استخدم `ADMOB_USE_TEST_IDS: true`.
+2. ثبّت الإضافة ثم أعد المزامنة:
+   ```bash
+   cd native
+   npm install @capacitor-community/admob
+   npm run sync
+   ```
+   هذا يضيف **إذن INTERNET** و**Google Mobile Ads SDK**. بعد ذلك أضف معرّف التطبيق في `AndroidManifest.xml` (`com.google.android.gms.ads.APPLICATION_ID`) وفي `Info.plist` (`GADApplicationIdentifier`). التفاصيل في [docs/ads.md](../docs/ads.md).
+3. أجهزة هواوي بدون خدمات جوجل **لن تشغّل AdMob**. يحتاج الأمر بناءً/نكهة منفصلة بـ Huawei Ads Kit (انظر نفس الدليل). لا نضيف هذا البناء الآن حتى لا يتغيّر سلوك 1.0.0.
+4. قبل رفع بناء فيه إعلانات: حدّث سياسة الخصوصية ونموذج أمان البيانات في المتاجر (قسم «إذا فُعِّلت الإعلانات»).
+
+`js/ads.js` يستدعي الإضافة فقط إذا كانت `ADMOB_ENABLED` ووُجدت الإضافة. بدونها يبقى التطبيق كما هو.
+

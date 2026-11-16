@@ -3,7 +3,8 @@
 استوديو عربي متكامل لصناعة الأفلام يعمل في المتصفح كتطبيق ويب تقدمي (PWA): على آيفون، وأجهزة هواوي بدون خدمات جوجل، والكمبيوتر.
 لا يحتاج إلى خادم خاص ولا خطوة بناء، ولا يعتمد على أي خدمة من جوجل. كل الملفات والمشاريع تبقى على جهاز المستخدم (IndexedDB).
 
-**مباشر:** https://ahmadalfayed.github.io/nahar-lens/
+**مباشر:** https://lens.clipkat.live/  
+(نسخة GitHub Pages: https://ahmadalfayed.github.io/nahar-lens/)
 
 **المستودع:** https://github.com/Ahmadalfayed/nahar-lens
 
@@ -50,6 +51,9 @@ python3 -m http.server 8080
 ---
 جميع الحقوق محفوظة © 2026 وطن النهار — All rights reserved © 2026 Watan Al-Nahar. راجع ملف LICENSE.
 
+
+## الإعلانات
+الإعلانات مطفية افتراضياً. لا تُحمَّل AdSense ولا AdMob ما دامت الأرقام في `js/ads-config.js` فارغة. التفاصيل وخطوات التفعيل لاحقاً (بما في ذلك ads.txt وAdMob وأجهزة هواوي) في [docs/ads.md](docs/ads.md).
 
 ## التطبيق الأصلي (Google Play / App Store)
 مشروع Capacitor في مجلد `native/` — التفاصيل وخطوات البناء والرفع في [native/README-native.md](native/README-native.md). سياسة الخصوصية: [privacy.html](privacy.html) · https://lens.clipkat.live/privacy.html

@@ -15,6 +15,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+<!--
+  لا توجد سياسة CSP مفعّلة الآن حتى لا ينكسر المونتاج/التصدير (blob: وغيرها).
+  عند تفعيل AdSense، عامل الخدمة لا يعترض طلبات الطرف الثالث ولا /ads.txt.
+  إن أُضيفت ترويسة CSP لاحقاً، انظر القائمة المطلوبة في docs/ads.md و docs/ads-csp-caddy.snippet.
+-->
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -35,10 +40,12 @@
   </header>
   <nav class="rail" id="rail"></nav>
   <main id="view" tabindex="-1"></main>
+  <aside id="nlAdHost" hidden></aside>
 </div>
 <div id="toasts" aria-live="polite"></div>
 <div class="grain" aria-hidden="true"></div>
 <script src="js/util.js"></script>
+<script src="js/ads-config.js"></script>
 <script src="js/native.js"></script>
 <script src="js/db.js"></script>
 <script src="js/store.js"></script>
@@ -50,5 +57,6 @@
 <script src="js/editor.js"></script>
 <script src="js/export.js"></script>
 <script src="js/app.js"></script>
+<script src="js/ads.js"></script>
 </body>
 </html>

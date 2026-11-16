@@ -68,6 +68,7 @@
     }
     main.classList.add('enter');
     main.scrollTop = 0;
+    document.dispatchEvent(new CustomEvent('nl-route', { detail: { key, tab: (parts[0] === 'p' && parts[1]) ? (parts[2] || 'script') : (parts[0] || 'home') } }));
   }
   NL.Views = NL.Views || {};
   NL.Views.about = {

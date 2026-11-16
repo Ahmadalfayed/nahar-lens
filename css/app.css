@@ -571,3 +571,43 @@ kbd { min-width: 30px; text-align: center; padding: 2px 8px; border-radius: 7px;
 /* التطبيق الأصلي (Capacitor) */
 .link-gold { color: var(--gold); text-decoration: none; border-bottom: 1px dashed rgba(231, 180, 83, .5); }
 html.native, html.native body { overscroll-behavior: none; overflow: hidden; height: 100%; }
+
+
+/* إعلانات — لا تأخذ أي مساحة ما دام المضيف مخفياً (الإعدادات فارغة) */
+#nlAdHost[hidden] { display: none !important; }
+#nlAdHost {
+  grid-area: ad;
+  background: rgba(10, 10, 12, .92);
+  border-top: 1px solid var(--line);
+  padding: 8px 12px calc(8px + var(--safe-b));
+  z-index: 14;
+}
+body.has-ads #app {
+  grid-template-rows: calc(var(--top) + var(--safe-t)) 1fr auto;
+  grid-template-areas: "top" "main" "ad";
+}
+body.has-ads.in-project #app {
+  grid-template-columns: var(--rail) 1fr;
+  grid-template-areas: "top top" "rail main" "rail ad";
+}
+.nl-ad-slot { display: block; max-width: 728px; margin: 0 auto; min-height: 50px; max-height: 120px; overflow: hidden; }
+.nl-ad-demo {
+  display: grid; place-items: center; text-align: center;
+  min-height: 60px; padding: 10px 14px;
+  border: 1px dashed rgba(231, 180, 83, .4); border-radius: 10px;
+  color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .2px;
+  background: repeating-linear-gradient(-45deg, rgba(231, 180, 83, .04), rgba(231, 180, 83, .04) 8px, transparent 8px, transparent 16px);
+}
+@media (max-width: 899px) {
+  body.has-ads.in-project #app {
+    grid-template-columns: 1fr;
+    grid-template-areas: "top" "main" "ad";
+  }
+  body.has-ads.in-project #nlAdHost {
+    position: fixed; left: 0; right: 0;
+    bottom: calc(66px + var(--safe-b));
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  body.has-ads.in-project #view { padding-bottom: calc(66px + var(--safe-b) + 84px); }
+}
